@@ -1,18 +1,20 @@
-import "./style.css"
+import React from "react"
+
+import "../style.css"
 import "@mantine/core/styles.css"
 
 import { createTheme, MantineProvider } from "@mantine/core"
 
-import PopupContent from "~components/PopupContent"
+import TopUpContent from "~components/TopUpContent"
 
 const theme = createTheme({})
 
-const Popup = () => {
+const TopUp = () => {
   return (
     <MantineProvider theme={theme}>
-      <PopupContent />
+      <TopUpContent />
     </MantineProvider>
   )
 }
 
-export default Popup
+export default React.memo(TopUp)
