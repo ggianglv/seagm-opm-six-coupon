@@ -1,71 +1,91 @@
-import { Button, rem, Tooltip } from "@mantine/core"
+import { Button, NumberInput, rem, Tooltip } from "@mantine/core"
 import { IconBrandGithub } from "@tabler/icons-react"
 import React, { useCallback, useEffect, useMemo, useState } from "react"
 
-import {
-  changeCurrency,
-  checkout,
-  gameTopUpBuy,
-  getCredits,
-  getCsrfToken
-} from "~components/api"
-import { getOrderNumber, getTradeId } from "~components/utils"
-
-const uidRegex = /^\d{8}_\d{6}$/
-
-const PRICE = 276
+import { getCredits } from "~components/api"
+import TopUpForm from "~components/TopUpForm"
+import TopUpProgress from "~components/TopUpProgress"
+import { sleep } from "~components/utils"
 
 const TopUpContent = () => {
-  const [uid, setUid] = useState("12670357_310594")
-  const [password, setPassword] = useState("12123123")
   const [processing, setProcessing] = useState(false)
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
-
-  useEffect(() => {
-    if (isLoggedIn) {
-      changeCurrency()
-    }
-  }, [isLoggedIn])
+  const [credits, setCredits] = useState(0)
+  const [quantity, setQuantity] = useState(1)
+  const [completed, setCompleted] = useState(0)
+  const [message, setMessage] = useState("")
 
   useEffect(() => {
     const userBtn = document.querySelector("#user-btn")
     setIsLoggedIn(Boolean(userBtn))
   }, [])
 
-  useEffect(() => {
-    getCredits().then((credits) => {
-      console.log(credits, "credits")
-    })
-  }, [])
-
-  const handleStart = async () => {
-    try {
-      setProcessing(true)
-      const path = await gameTopUpBuy(uid)
-      const csrfToken = await getCsrfToken(path)
-      const orderNumber = getOrderNumber(path)
-      const checkoutUrl = await checkout(orderNumber, csrfToken)
-      console.log(checkoutUrl)
-      // const tradeId = getTradeId(checkoutUrl)
-      // console.log(tradeId, checkoutUrl, "urlll")
-    } catch (e) {
-      console.log(e)
-    } finally {
-      setProcessing(false)
-    }
-  }
-
   const handleRedirectToGithub = () => {
     window.open("https://github.com")
   }
 
-  const buttonTooltip = useMemo(() => {
-    if (!uid) return "Please enter your UID"
-    if (!password) return "Please enter your Seagm password"
-    if (!uidRegex.test(uid)) return "Invalid UID"
-    return ""
-  }, [uid, password])
+  useEffect(() => {
+    setIsLoading(true)
+    getCredits()
+      .then((credits) => {
+        setCredits(10000)
+      })
+      .finally(() => {
+        setIsLoading(false)
+      })
+  }, [])
+
+  const processOrder = () => {
+    return new Promise((resolve, reject) => {
+      // const path = await gameTopUpBuy(uid)
+      // const csrfToken = await getCsrfToken(path)
+      // const orderNumber = getOrderNumber(path)
+      // const checkoutUrl = await checkout(orderNumber, csrfToken)
+      const checkoutUrl =
+        "https://pay.seagm.com/vi-vn/select?from=seagm&trade_id=55922731"
+
+      const checkoutWindow = window.open(checkoutUrl)
+
+      const handleMessage = (message: any) => {
+        if (message.data === "TOP_UP_SUCCESS") {
+          checkoutWindow.close()
+          window.removeEventListener("message", handleMessage)
+          resolve(true)
+        }
+      }
+      window.addEventListener("message", handleMessage)
+
+      setInterval(() => {
+        if (checkoutWindow.closed) reject(false)
+      }, 100)
+    })
+  }
+
+  const handleStart = async () => {
+    try {
+      setProcessing(true)
+      for (let i = 0; i < quantity; i++) {
+        await processOrder()
+        setCompleted((prev) => prev + 1)
+        await sleep(3000)
+      }
+    } catch (e) {
+      setMessage("Something went wrong, please refresh and try again!")
+    }
+  }
+
+  const handleCancel = () => {
+    setQuantity(0)
+    setMessage("")
+    setProcessing(false)
+    setIsLoading(true)
+    getCredits()
+      .then((credits) => {
+        setCredits(+credits)
+      })
+      .finally(() => setIsLoading(false))
+  }
 
   return (
     <div className="order">
@@ -80,54 +100,30 @@ const TopUpContent = () => {
           />
         </div>
 
-        <div className="field">
-          <label className="cpt-text">
-            <span>UID</span>
-            <input
-              onChange={(e) => setUid(e.target.value)}
-              value={uid}
-              type="text"
-              className="tukifield userFieldParam "
-              placeholder="Please enter UID"
-              autoComplete="off"
-            />
-          </label>
-        </div>
+        {message && <div className="text-yellow-200">{message}</div>}
 
-        <div className="field">
-          <label className="cpt-text">
-            <span>PW</span>
-            <input
-              onChange={(e) => {
-                setPassword(e.target.value)
-              }}
-              value={password}
-              type="password"
-              className="tukifield userFieldParam"
-              placeholder="Please enter Password"
-            />
-          </label>
-        </div>
+        {(() => {
+          if (processing) {
+            return (
+              <TopUpProgress
+                handleCancel={handleCancel}
+                completed={completed}
+                quantity={quantity}
+              />
+            )
+          }
 
-        {buttonTooltip ? (
-          <Tooltip label={buttonTooltip}>
-            <Button
-              onClick={handleStart}
-              disabled={Boolean(buttonTooltip)}
-              className="mt-[10px]"
-              fullWidth={false}>
-              Start
-            </Button>
-          </Tooltip>
-        ) : (
-          <Button
-            onClick={handleStart}
-            disabled={Boolean(buttonTooltip)}
-            className="mt-[10px]"
-            fullWidth={false}>
-            Start
-          </Button>
-        )}
+          return (
+            <TopUpForm
+              quantity={quantity}
+              setQuantity={setQuantity}
+              credits={credits}
+              handleStart={handleStart}
+              isLoggedIn={isLoggedIn}
+              isLoading={isLoading}
+            />
+          )
+        })()}
       </div>
     </div>
   )

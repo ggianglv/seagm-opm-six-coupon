@@ -12,6 +12,7 @@
   "dependencies": {
     "@mantine/core": "^7.11.1",
     "@mantine/hooks": "^7.11.1",
+    "@plasmohq/storage": "^1.11.0",
     "@tabler/icons-react": "^3.7.0",
     "jquery": "^3.7.1",
     "plasmo": "0.88.0",
