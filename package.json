@@ -1,8 +1,8 @@
 {
   "name": "seagm-six-cp",
-  "displayName": "Seagm six cp",
+  "displayName": "Seagm OPM auto 6 coupon",
   "version": "0.0.1",
-  "description": "Seagm spam 6 coupon",
+  "description": "Seagm OPM auto 6 coupon",
   "author": "gianglevan94@gmail.com",
   "scripts": {
     "dev": "plasmo dev",
