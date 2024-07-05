@@ -1,3 +1,4 @@
+import type { PlasmoCSConfig } from "plasmo"
 import { createRoot } from "react-dom/client"
 
 import AutoPurchase from "~components/TopUp"
@@ -18,6 +19,10 @@ if (document.readyState !== "loading") {
   renderContent()
 } else {
   self?.addEventListener("DOMContentLoaded", renderContent)
+}
+
+export const config: PlasmoCSConfig = {
+  matches: ["https://www.seagm.com/*"]
 }
 
 export default () => null

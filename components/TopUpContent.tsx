@@ -1,8 +1,15 @@
 import { Button, rem, Tooltip } from "@mantine/core"
 import { IconBrandGithub } from "@tabler/icons-react"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useCallback, useEffect, useMemo, useState } from "react"
 
-import { gameTopUpBuy, getCredits } from "~components/api"
+import {
+  changeCurrency,
+  checkout,
+  gameTopUpBuy,
+  getCredits,
+  getCsrfToken
+} from "~components/api"
+import { getOrderNumber, getTradeId } from "~components/utils"
 
 const uidRegex = /^\d{8}_\d{6}$/
 
@@ -12,6 +19,19 @@ const TopUpContent = () => {
   const [uid, setUid] = useState("12670357_310594")
   const [password, setPassword] = useState("12123123")
   const [processing, setProcessing] = useState(false)
+  const [isLoggedIn, setIsLoggedIn] = useState(false)
+  const [isLoading, setIsLoading] = useState(true)
+
+  useEffect(() => {
+    if (isLoggedIn) {
+      changeCurrency()
+    }
+  }, [isLoggedIn])
+
+  useEffect(() => {
+    const userBtn = document.querySelector("#user-btn")
+    setIsLoggedIn(Boolean(userBtn))
+  }, [])
 
   useEffect(() => {
     getCredits().then((credits) => {
@@ -22,8 +42,13 @@ const TopUpContent = () => {
   const handleStart = async () => {
     try {
       setProcessing(true)
-      const data = await gameTopUpBuy(uid)
-      console.log(data, "datataaa")
+      const path = await gameTopUpBuy(uid)
+      const csrfToken = await getCsrfToken(path)
+      const orderNumber = getOrderNumber(path)
+      const checkoutUrl = await checkout(orderNumber, csrfToken)
+      console.log(checkoutUrl)
+      // const tradeId = getTradeId(checkoutUrl)
+      // console.log(tradeId, checkoutUrl, "urlll")
     } catch (e) {
       console.log(e)
     } finally {
