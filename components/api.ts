@@ -76,7 +76,7 @@ export const getCredits = async () => {
   const document = domParser.parseFromString(html, "text/html")
   const credits = document.querySelector("[icon-brand='seagmcredits']")
 
-  return credits?.textContent || 0
+  return credits?.textContent || "0"
 }
 
 export const getChangeLanguageUrl = async () => {

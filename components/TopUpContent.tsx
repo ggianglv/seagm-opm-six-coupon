@@ -1,8 +1,9 @@
 import { rem } from "@mantine/core"
 import { IconBrandGithub } from "@tabler/icons-react"
-import React, { useEffect, useMemo, useRef, useState } from "react"
+import React, { useEffect, useRef, useState } from "react"
 
 import {
+  changeCurrency,
   checkout,
   gameTopUpBuy,
   getCredits,
@@ -10,7 +11,8 @@ import {
 } from "~components/api"
 import TopUpForm from "~components/TopUpForm"
 import TopUpProgress from "~components/TopUpProgress"
-import { getOrderNumber, sleep } from "~components/utils"
+import { getOrderNumber, getTradeId, sleep } from "~components/utils"
+import { storage } from "~storage"
 
 const TopUpContent = () => {
   const [processing, setProcessing] = useState(false)
@@ -35,7 +37,7 @@ const TopUpContent = () => {
     setIsLoading(true)
     getCredits()
       .then((credits) => {
-        setCredits(+credits)
+        setCredits(+credits.replace(/,/g, ""))
       })
       .finally(() => {
         setIsLoading(false)
@@ -48,6 +50,8 @@ const TopUpContent = () => {
       const csrfToken = await getCsrfToken(path)
       const orderNumber = getOrderNumber(path)
       const checkoutUrl = await checkout(orderNumber, csrfToken)
+      const tradeId = getTradeId(checkoutUrl)
+      await storage.set("tradeId", tradeId.toString())
 
       const checkoutWindow = window.open(checkoutUrl)
 
@@ -78,6 +82,7 @@ const TopUpContent = () => {
   const handleStart = async (uid: string) => {
     try {
       setProcessing(true)
+      await changeCurrency()
       shouldProcess.current = true
       for (let i = 0; i < quantity; i++) {
         if (!shouldProcess.current) break

@@ -22,7 +22,7 @@ if (document.readyState !== "loading") {
 }
 
 export const config: PlasmoCSConfig = {
-  matches: ["https://www.seagm.com/*"]
+  matches: ["https://www.seagm.com/*", "https://seagm.com/*"]
 }
 
 export default () => null
