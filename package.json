@@ -32,12 +32,6 @@
     "typescript": "5.3.3"
   },
   "manifest": {
-    "host_permissions": [
-      "https://www.seagm.com/*"
-    ],
-    "permissions": [
-      "activeTab",
-      "tabs"
-    ]
+    "host_permissions": []
   }
 }
