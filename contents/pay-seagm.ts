@@ -1,6 +1,8 @@
 import $ from "jquery"
 import type { PlasmoCSConfig } from "plasmo"
 
+import { storage } from "~storage"
+
 export const config: PlasmoCSConfig = {
   matches: ["https://pay.seagm.com/*"]
 }
@@ -30,11 +32,25 @@ const autoPay = async () => {
   const tradeId = url.searchParams.get("trade_id")
   if (!tradeId) return
   await waitForElm(".paynow")
-  $("#login_psw").val("123131312afdsfsd3")
-  // $(".paynow").click()
+  const password = await storage.get("password")
+  const sCreditInput = document.querySelector(
+    'input[value="scredits"]'
+  ) as HTMLInputElement
+  if (!password || sCreditInput?.disabled) {
+    window.opener.postMessage("TOP_UP_FAILED", "*")
+    return
+  }
+
+  $("#login_psw").val(password)
+  $(".paynow").click()
+
   setTimeout(() => {
-    window.opener.postMessage("TOP_UP_SUCCESS", "*")
-  }, 5000)
+    // window.opener.postMessage("TOP_UP_SUCCESS", "*")
+  }, 2000)
+
+  setTimeout(() => {
+    window.opener.postMessage("TOP_UP_FAILED", "*")
+  }, 20000)
 }
 
 if (document.readyState !== "loading") {

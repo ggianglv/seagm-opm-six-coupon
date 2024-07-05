@@ -12,9 +12,11 @@ const TopUpProgress = ({
   quantity,
   handleCancel
 }: TopUpProgressProps) => {
+  const isDone = completed === quantity
+
   return (
     <div className="flex flex-col gap-[8px] mt-[10px]">
-      {completed === quantity ? (
+      {isDone ? (
         <div>Completed {quantity} orders</div>
       ) : (
         <div>
@@ -25,11 +27,11 @@ const TopUpProgress = ({
       <Progress radius="xs" value={(completed / quantity) * 100} />
 
       <Button
-        color="red"
+        color={isDone ? "gray" : "red"}
         onClick={handleCancel}
         className="mt-[10px]"
         fullWidth={false}>
-        Cancel
+        {isDone ? "Done" : "Cancel"}
       </Button>
     </div>
   )

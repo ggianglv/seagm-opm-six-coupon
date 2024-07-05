@@ -1,11 +1,16 @@
-import { Button, NumberInput, rem, Tooltip } from "@mantine/core"
+import { rem } from "@mantine/core"
 import { IconBrandGithub } from "@tabler/icons-react"
-import React, { useCallback, useEffect, useMemo, useState } from "react"
+import React, { useEffect, useMemo, useRef, useState } from "react"
 
-import { getCredits } from "~components/api"
+import {
+  checkout,
+  gameTopUpBuy,
+  getCredits,
+  getCsrfToken
+} from "~components/api"
 import TopUpForm from "~components/TopUpForm"
 import TopUpProgress from "~components/TopUpProgress"
-import { sleep } from "~components/utils"
+import { getOrderNumber, sleep } from "~components/utils"
 
 const TopUpContent = () => {
   const [processing, setProcessing] = useState(false)
@@ -15,6 +20,7 @@ const TopUpContent = () => {
   const [quantity, setQuantity] = useState(1)
   const [completed, setCompleted] = useState(0)
   const [message, setMessage] = useState("")
+  const shouldProcess = useRef(false)
 
   useEffect(() => {
     const userBtn = document.querySelector("#user-btn")
@@ -36,14 +42,12 @@ const TopUpContent = () => {
       })
   }, [])
 
-  const processOrder = () => {
-    return new Promise((resolve, reject) => {
-      // const path = await gameTopUpBuy(uid)
-      // const csrfToken = await getCsrfToken(path)
-      // const orderNumber = getOrderNumber(path)
-      // const checkoutUrl = await checkout(orderNumber, csrfToken)
-      const checkoutUrl =
-        "https://pay.seagm.com/vi-vn/select?from=seagm&trade_id=55922731"
+  const processOrder = (uid: string) => {
+    return new Promise(async (resolve, reject) => {
+      const path = await gameTopUpBuy(uid)
+      const csrfToken = await getCsrfToken(path)
+      const orderNumber = getOrderNumber(path)
+      const checkoutUrl = await checkout(orderNumber, csrfToken)
 
       const checkoutWindow = window.open(checkoutUrl)
 
@@ -53,29 +57,42 @@ const TopUpContent = () => {
           window.removeEventListener("message", handleMessage)
           resolve(true)
         }
+
+        if (message.data === "TOP_UP_FAILED") {
+          checkoutWindow.close()
+          window.removeEventListener("message", handleMessage)
+          reject(false)
+        }
       }
       window.addEventListener("message", handleMessage)
 
       setInterval(() => {
-        if (checkoutWindow.closed) reject(false)
+        if (checkoutWindow.closed) {
+          window.addEventListener("message", handleMessage)
+          reject(false)
+        }
       }, 100)
     })
   }
 
-  const handleStart = async () => {
+  const handleStart = async (uid: string) => {
     try {
       setProcessing(true)
+      shouldProcess.current = true
       for (let i = 0; i < quantity; i++) {
-        await processOrder()
+        if (!shouldProcess.current) break
+        await processOrder(uid)
         setCompleted((prev) => prev + 1)
         await sleep(3000)
       }
     } catch (e) {
+      shouldProcess.current = false
       setMessage("Something went wrong, please refresh and try again!")
     }
   }
 
   const handleCancel = () => {
+    shouldProcess.current = false
     setQuantity(0)
     setMessage("")
     setProcessing(false)

@@ -1,5 +1,7 @@
 import { Button, NumberInput, Tooltip } from "@mantine/core"
-import React, { useEffect, useMemo, useState } from "react"
+import React, { useMemo, useState, type ChangeEvent } from "react"
+
+import { storage } from "~storage"
 
 const uidRegex = /^\d{8}_\d{6}$/
 
@@ -7,7 +9,7 @@ const PRICE = 276
 
 interface TopUpFormProps {
   credits: number
-  handleStart: () => Promise<void>
+  handleStart: (uid: string) => Promise<void>
   isLoggedIn: boolean
   isLoading: boolean
   quantity: number
@@ -22,8 +24,8 @@ const TopUpForm = ({
   quantity,
   setQuantity
 }: TopUpFormProps) => {
-  const [uid, setUid] = useState("12670357_310594")
-  const [password, setPassword] = useState("12123123")
+  const [uid, setUid] = useState("")
+  const [password, setPassword] = useState("")
 
   const handleClickMax = () => {
     setQuantity(Math.floor(credits / PRICE))
@@ -39,6 +41,11 @@ const TopUpForm = ({
     if (isLoading) return "Loading credits..."
     return ""
   }, [uid, password, isLoggedIn, credits, quantity, isLoading])
+
+  const handleChangePassword = (e: ChangeEvent<HTMLInputElement>) => {
+    setPassword(e.target.value)
+    storage.set("password", e.target.value)
+  }
 
   return (
     <div className="flex flex-col gap-[8px]">
@@ -60,9 +67,7 @@ const TopUpForm = ({
         <label className="cpt-text">
           <span>PW</span>
           <input
-            onChange={(e) => {
-              setPassword(e.target.value)
-            }}
+            onChange={handleChangePassword}
             value={password}
             type="password"
             className="tukifield userFieldParam"
@@ -88,7 +93,7 @@ const TopUpForm = ({
       {buttonTooltip ? (
         <Tooltip label={buttonTooltip}>
           <Button
-            onClick={handleStart}
+            onClick={() => handleStart(uid)}
             disabled={Boolean(buttonTooltip)}
             className="mt-[10px]"
             fullWidth={false}>
@@ -98,7 +103,7 @@ const TopUpForm = ({
       ) : (
         <Button
           loading={isLoading}
-          onClick={handleStart}
+          onClick={() => handleStart(uid)}
           disabled={Boolean(buttonTooltip)}
           className="mt-[10px]"
           fullWidth={false}>
