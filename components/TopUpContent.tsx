@@ -35,7 +35,7 @@ const TopUpContent = () => {
     setIsLoading(true)
     getCredits()
       .then((credits) => {
-        setCredits(10000)
+        setCredits(+credits)
       })
       .finally(() => {
         setIsLoading(false)
