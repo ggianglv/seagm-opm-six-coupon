@@ -30,7 +30,7 @@ const TopUpContent = () => {
   }, [])
 
   const handleRedirectToGithub = () => {
-    window.open("https://github.com")
+    window.open("https://github.com/ggianglv/seagm-opm-six-coupon")
   }
 
   useEffect(() => {
