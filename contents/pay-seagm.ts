@@ -31,7 +31,8 @@ const waitForElm = (selector: string) => {
 const autoPay = async () => {
   const url = new URL(window.location.href)
   const tradeId = url.searchParams.get("trade_id")
-  if (!tradeId) return
+  const storageTradeId = await storage.get("tradeId")
+  if (!tradeId || tradeId !== storageTradeId) return
   await waitForElm(".paynow")
   const password = await storage.get("password")
   const sCreditInput = document.querySelector(

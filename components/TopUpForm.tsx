@@ -1,5 +1,5 @@
 import { Button, NumberInput, Tooltip } from "@mantine/core"
-import React, { useMemo, useState, type ChangeEvent } from "react"
+import React, { useEffect, useMemo, useState, type ChangeEvent } from "react"
 
 import { storage } from "~storage"
 
@@ -46,6 +46,10 @@ const TopUpForm = ({
     setPassword(e.target.value)
     storage.set("password", e.target.value)
   }
+
+  useEffect(() => {
+    setQuantity(Math.min(Math.floor(credits / PRICE), 1))
+  }, [credits])
 
   return (
     <div className="flex flex-col gap-[8px]">
