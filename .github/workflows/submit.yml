@@ -3,7 +3,7 @@ name: Publish to Chrome Web Store
 on:
   push:
     branches:
-      - main 
+      - main # Trigger the workflow on push events to the main branch
 
 jobs:
   publish:
@@ -11,21 +11,18 @@ jobs:
 
     steps:
       - name: Checkout code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v2
 
       - name: Set up Node.js
         uses: actions/setup-node@v2
         with:
-          node-version: "18"
-
-      - name: Set up pnpm
-        uses: pnpm/action-setup@v4
+          node-version: "18" # Ensure you use the Node.js version expected by Plasmo
 
       - name: Install dependencies
         run: npm install
 
       - name: Build the extension
-        run: pnpm build --zip
+        run: npm run build -- --zip
 
       - name: Deploy to Chrome Web Store
         env:
