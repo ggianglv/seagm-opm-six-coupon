@@ -1,34 +1,38 @@
-name: "Submit to Web Store"
+name: Publish to Chrome Web Store
+
 on:
-  workflow_dispatch:
+  push:
+    branches:
+      - main 
 
 jobs:
-  build:
+  publish:
     runs-on: ubuntu-latest
+
     steps:
-      - uses: actions/checkout@v3
-      - name: Cache pnpm modules
-        uses: actions/cache@v3
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v2
         with:
-          path: ~/.pnpm-store
-          key: ${{ runner.os }}-${{ hashFiles('**/pnpm-lock.yaml') }}
-          restore-keys: |
-            ${{ runner.os }}-
-      - uses: pnpm/action-setup@v2.2.4
-        with:
-          version: latest
-          run_install: true
-      - name: Use Node.js 16.x
-        uses: actions/setup-node@v3.4.1
-        with:
-          node-version: 16.x
-          cache: "pnpm"
+          node-version: "18"
+
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+
+      - name: Install dependencies
+        run: npm install
+
       - name: Build the extension
-        run: pnpm build
-      - name: Package the extension into a zip artifact
-        run: pnpm package
-      - name: Browser Platform Publish
-        uses: PlasmoHQ/bpp@v3
-        with:
-          keys: ${{ secrets.SUBMIT_KEYS }}
-          artifact: build/chrome-mv3-prod.zip
+        run: pnpm build --zip
+
+      - name: Deploy to Chrome Web Store
+        env:
+          CLIENT_ID: ${{ secrets.WEBSTORE_CLIENT_ID }}
+          CLIENT_SECRET: ${{ secrets.WEBSTORE_CLIENT_SECRET }}
+          REFRESH_TOKEN: ${{ secrets.WEBSTORE_REFRESH_TOKEN }}
+          APP_ID: ${{ secrets.WEBSTORE_APP_ID }}
+        run: |
+          npx chrome-webstore-upload-cli upload --source ./dist --target $APP_ID --token-fetch-client-id $CLIENT_ID --token-fetch-client-secret $CLIENT_SECRET --token-fetch-refresh-token $REFRESH_TOKEN
+          npx chrome-webstore-upload-cli publish --target $APP_ID --token-fetch-client-id $CLIENT_ID --token-fetch-client-secret $CLIENT_SECRET --token-fetch-refresh-token $REFRESH_TOKEN
