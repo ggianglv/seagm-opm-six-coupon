@@ -44,3 +44,7 @@ jobs:
         run: |
           pnpm i --no-frozen-lockfile
           pnpm run build -- --zip
+      - name: Browser Platform Publish
+        uses: PlasmoHQ/bpp@v3
+        with:
+          keys: ${{ secrets.BPP_KEYS }}
