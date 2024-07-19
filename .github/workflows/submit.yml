@@ -1,35 +1,46 @@
-name: Publish to Chrome Web Store
-
+name: Test examples
 on:
   push:
-    branches:
-      - main # Trigger the workflow on push events to the main branch
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
 
 jobs:
-  publish:
+  build:
     runs-on: ubuntu-latest
 
+    strategy:
+      matrix:
+        node-version: [20.x]
     steps:
-      - name: Checkout code
-        uses: actions/checkout@v2
-
-      - name: Set up Node.js
-        uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: "18" # Ensure you use the Node.js version expected by Plasmo
+          node-version: ${{ matrix.node-version }}
+      - uses: actions/checkout@master
+        with:
+          submodules: "recursive"
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v3
+        with:
+          version: v9.0.6
+          run_install: false
 
-      - name: Install dependencies
-        run: npm install
-
-      - name: Build the extension
-        run: npm run build -- --zip
-
-      - name: Deploy to Chrome Web Store
-        env:
-          CLIENT_ID: ${{ secrets.WEBSTORE_CLIENT_ID }}
-          CLIENT_SECRET: ${{ secrets.WEBSTORE_CLIENT_SECRET }}
-          REFRESH_TOKEN: ${{ secrets.WEBSTORE_REFRESH_TOKEN }}
-          APP_ID: ${{ secrets.WEBSTORE_APP_ID }}
+      - name: Get pnpm store directory
+        id: pnpm-cache
+        shell: bash
         run: |
-          npx chrome-webstore-upload-cli upload --source ./dist --target $APP_ID --token-fetch-client-id $CLIENT_ID --token-fetch-client-secret $CLIENT_SECRET --token-fetch-refresh-token $REFRESH_TOKEN
-          npx chrome-webstore-upload-cli publish --target $APP_ID --token-fetch-client-id $CLIENT_ID --token-fetch-client-secret $CLIENT_SECRET --token-fetch-refresh-token $REFRESH_TOKEN
+          echo "STORE_PATH=$(pnpm store path)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v3
+        name: Setup pnpm cache
+        with:
+          path: ${{ steps.pnpm-cache.outputs.STORE_PATH }}
+          key: ${{ runner.os }}-pnpm-store-${{ hashFiles('**/pnpm-lock.yaml') }}
+          restore-keys: |
+            ${{ runner.os }}-pnpm-store-
+
+      - name: "Build local version of Plasmo"
+        run: |
+          pnpm i --no-frozen-lockfile
+          pnpm run build -- --zip
