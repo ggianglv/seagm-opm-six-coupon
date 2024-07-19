@@ -1,4 +1,5 @@
 import { Button, NumberInput, Tooltip } from "@mantine/core"
+import { IconHelpOctagon } from "@tabler/icons-react"
 import React, { useEffect, useMemo, useState, type ChangeEvent } from "react"
 
 import { storage } from "~storage"
@@ -82,16 +83,25 @@ const TopUpForm = ({
 
       <div>Your Seagm credits: {credits}</div>
 
-      <div className="flex items-center gap-[4px]">
-        <NumberInput
-          value={quantity}
-          onChange={(value) => setQuantity(+value)}
-          size="xs"
-          style={{ width: 80 }}
-        />
-        <Button onClick={handleClickMax} color="gray" size="xs">
-          Max
-        </Button>
+      <div className="flex flex-col gap-[4px]">
+        <div className="flex items-center gap-[4px]">
+          <span>Orders</span>
+
+          <Tooltip label={`${PRICE} Seagm credits per order`}>
+            <IconHelpOctagon style={{ width: 20, height: 20 }} />
+          </Tooltip>
+        </div>
+        <div className="flex items-center gap-[4px]">
+          <NumberInput
+            value={quantity}
+            onChange={(value) => setQuantity(+value)}
+            size="xs"
+            style={{ width: 80 }}
+          />
+          <Button onClick={handleClickMax} color="gray" size="xs">
+            Max
+          </Button>
+        </div>
       </div>
 
       {buttonTooltip ? (
