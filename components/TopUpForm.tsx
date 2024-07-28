@@ -33,10 +33,10 @@ const TopUpForm = ({
   }
 
   const buttonTooltip = useMemo(() => {
+    if (!isLoggedIn) return "Please login to Seagm"
     if (!uid) return "Please enter your UID"
     if (!password) return "Please enter your Seagm password"
     if (!uidRegex.test(uid)) return "Invalid UID"
-    if (!isLoggedIn) return "Please login to Seagm"
     if (credits < PRICE * quantity) return "Not enough credits"
     if (quantity <= 0) return "Quantity must be greater than 0"
     if (isLoading) return "Loading credits..."
@@ -76,7 +76,7 @@ const TopUpForm = ({
             value={password}
             type="password"
             className="tukifield userFieldParam"
-            placeholder="Please enter Password"
+            placeholder="Please enter Seagm Password"
           />
         </label>
       </div>
