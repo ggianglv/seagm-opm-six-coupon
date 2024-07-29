@@ -53,29 +53,27 @@ const TopUpContent = () => {
       const tradeId = getTradeId(checkoutUrl)
       await storage.set("tradeId", tradeId.toString())
 
-      const checkoutWindow = window.open(checkoutUrl)
+      const iframe = document.createElement("iframe")
+      iframe.src = checkoutUrl
+      iframe.style.visibility = "hidden"
+      iframe.style.position = "absolute"
+      iframe.style.top = "0px"
+      document.body.appendChild(iframe)
 
       const handleMessage = (message: any) => {
         if (message.data === "TOP_UP_SUCCESS") {
-          checkoutWindow.close()
           window.removeEventListener("message", handleMessage)
+          document.body.removeChild(iframe)
           resolve(true)
         }
 
         if (message.data === "TOP_UP_FAILED") {
-          checkoutWindow.close()
+          document.body.removeChild(iframe)
           window.removeEventListener("message", handleMessage)
           reject(false)
         }
       }
       window.addEventListener("message", handleMessage)
-
-      setInterval(() => {
-        if (checkoutWindow.closed) {
-          window.addEventListener("message", handleMessage)
-          reject(false)
-        }
-      }, 100)
     })
   }
 
@@ -104,7 +102,7 @@ const TopUpContent = () => {
     setIsLoading(true)
     getCredits()
       .then((credits) => {
-        setCredits(+credits)
+        setCredits(+credits.replace(/,/g, ""))
       })
       .finally(() => setIsLoading(false))
   }
@@ -113,7 +111,7 @@ const TopUpContent = () => {
     <div className="order">
       <div className="flex flex-col gap-[8px] p-[16px]">
         <div className="flex items-center gap-1">
-          <div className="text-[16px] font-medium">Seagm 6 coupon spam</div>
+          <div className="text-[16px] font-medium">Seagm 6 coupon spammer</div>
           <IconBrandGithub
             onClick={handleRedirectToGithub}
             className="cursor-pointer"

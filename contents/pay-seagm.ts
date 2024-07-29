@@ -5,7 +5,8 @@ import { sleep } from "~components/utils"
 import { storage } from "~storage"
 
 export const config: PlasmoCSConfig = {
-  matches: ["https://pay.seagm.com/*", "https://www.pay.seagm.com/*"]
+  matches: ["https://pay.seagm.com/*", "https://www.pay.seagm.com/*"],
+  all_frames: true
 }
 
 const waitForElm = (selector: string) => {
@@ -40,7 +41,7 @@ const autoPay = async () => {
   ) as HTMLInputElement
   await sleep(3000)
   if (!password || sCreditInput?.disabled) {
-    window.opener.postMessage("TOP_UP_FAILED", "*")
+    window.parent.postMessage("TOP_UP_FAILED", "*")
     return
   }
 
@@ -48,7 +49,7 @@ const autoPay = async () => {
   $(".paynow").click()
 
   setTimeout(() => {
-    window.opener.postMessage("TOP_UP_FAILED", "*")
+    window.parent.postMessage("TOP_UP_FAILED", "*")
   }, 20000)
 }
 
@@ -65,7 +66,7 @@ const checkSuccess = async () => {
     +currentTradeId === +url.searchParams.get("trade_id") &&
     window.location.href.includes("seagm/success")
   ) {
-    window.opener.postMessage("TOP_UP_SUCCESS", "*")
+    window.parent.postMessage("TOP_UP_SUCCESS", "*")
   }
 }
 

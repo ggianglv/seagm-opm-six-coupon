@@ -1,4 +1,5 @@
 import { Button, Progress } from "@mantine/core"
+import { IconLoader2 } from "@tabler/icons-react"
 import React from "react"
 
 interface TopUpProgressProps {
@@ -19,7 +20,8 @@ const TopUpProgress = ({
       {isDone ? (
         <div>Completed {quantity} orders</div>
       ) : (
-        <div>
+        <div className="flex items-center gap-[4px]">
+          <IconLoader2 className="w-[16px] animate-spin" />
           Processing order {completed + 1}/{quantity}
         </div>
       )}
