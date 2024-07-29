@@ -10,7 +10,7 @@ const renderContent = () => {
   const container = document.querySelector(".item_function")
   if (!container || !seagmRegex.test(window.location.href)) return
   const div = document.createElement("div")
-  container.append(div)
+  container.prepend(div)
   const root = createRoot(div)
   root.render(<AutoPurchase />)
 }

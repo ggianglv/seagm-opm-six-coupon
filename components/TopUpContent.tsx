@@ -58,6 +58,8 @@ const TopUpContent = () => {
       iframe.style.visibility = "hidden"
       iframe.style.position = "absolute"
       iframe.style.top = "0px"
+      iframe.style.width = "0px"
+      iframe.style.height = "0px"
       document.body.appendChild(iframe)
 
       const handleMessage = (message: any) => {
