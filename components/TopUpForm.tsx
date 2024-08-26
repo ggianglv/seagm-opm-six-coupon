@@ -6,7 +6,7 @@ import { storage } from "~storage"
 
 const uidRegex = /^\d{8}_\d{6}$/
 
-const PRICE = 257
+const PRICE = 261
 
 interface TopUpFormProps {
   credits: number
