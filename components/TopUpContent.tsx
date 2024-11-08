@@ -2,12 +2,13 @@ import { rem } from "@mantine/core"
 import { IconBrandGithub } from "@tabler/icons-react"
 import React, { useEffect, useRef, useState } from "react"
 
+import Analytics from "~components/analytics"
 import {
   changeCurrency,
   checkout,
   gameTopUpBuy,
-  getCredits,
-  getCsrfToken
+  getCsrfToken,
+  getUserInfo
 } from "~components/api"
 import TopUpForm from "~components/TopUpForm"
 import TopUpProgress from "~components/TopUpProgress"
@@ -19,6 +20,7 @@ const TopUpContent = () => {
   const [isLoggedIn, setIsLoggedIn] = useState(false)
   const [isLoading, setIsLoading] = useState(true)
   const [credits, setCredits] = useState(0)
+  const [email, setEmail] = useState("")
   const [quantity, setQuantity] = useState(1)
   const [completed, setCompleted] = useState(0)
   const [message, setMessage] = useState("")
@@ -35,9 +37,10 @@ const TopUpContent = () => {
 
   useEffect(() => {
     setIsLoading(true)
-    getCredits()
-      .then((credits) => {
+    getUserInfo()
+      .then(({ credits, email }) => {
         setCredits(+credits.replace(/,/g, ""))
+        setEmail(email)
       })
       .finally(() => {
         setIsLoading(false)
@@ -66,6 +69,10 @@ const TopUpContent = () => {
         if (message.data === "TOP_UP_SUCCESS") {
           window.removeEventListener("message", handleMessage)
           document.body.removeChild(iframe)
+          Analytics.fireEvent("top_up_success", {
+            email,
+            uid
+          })
           resolve(true)
         }
 
@@ -102,8 +109,8 @@ const TopUpContent = () => {
     setMessage("")
     setProcessing(false)
     setIsLoading(true)
-    getCredits()
-      .then((credits) => {
+    getUserInfo()
+      .then(({ credits }) => {
         setCredits(+credits.replace(/,/g, ""))
       })
       .finally(() => setIsLoading(false))

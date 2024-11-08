@@ -68,15 +68,22 @@ export const checkout = (order: number, csrfToken: string) => {
     .then((res) => res[0].redirect[0][0])
 }
 
-export const getCredits = async () => {
+export const getUserInfo = async () => {
   const html = await fetch("https://www.seagm.com/vi-vn/member").then((res) =>
     res.text()
   )
   const domParser = new DOMParser()
   const document = domParser.parseFromString(html, "text/html")
   const credits = document.querySelector("[icon-brand='seagmcredits']")
+  const email =
+    document
+      .querySelectorAll("#user_info_overview .stat div")?.[1]
+      ?.textContent?.trim() || ""
 
-  return credits?.textContent || "0"
+  return {
+    credits: credits?.textContent || "0",
+    email
+  }
 }
 
 export const getChangeLanguageUrl = async () => {
