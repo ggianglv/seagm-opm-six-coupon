@@ -103,27 +103,6 @@ const TopUpForm = ({
           </Button>
         </div>
       </div>
-
-      {buttonTooltip ? (
-        <Tooltip label={buttonTooltip}>
-          <Button
-            onClick={() => handleStart(uid)}
-            disabled={Boolean(buttonTooltip)}
-            className="mt-[10px]"
-            fullWidth={false}>
-            Start
-          </Button>
-        </Tooltip>
-      ) : (
-        <Button
-          loading={isLoading}
-          onClick={() => handleStart(uid)}
-          disabled={Boolean(buttonTooltip)}
-          className="mt-[10px]"
-          fullWidth={false}>
-          Start
-        </Button>
-      )}
     </div>
   )
 }
